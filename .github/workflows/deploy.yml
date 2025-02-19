@@ -53,10 +53,9 @@ jobs:
 
       - name: Run Flyway Migrations
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
-          SPRING_DATASOURCE_USERNAME: testuser
-          SPRING_DATASOURCE_PASSWORD: testpassword
-          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+          FLYWAY_URL: jdbc:postgresql://localhost:5432/testdb
+          FLYWAY_USER: testuser
+          FLYWAY_PASSWORD: testpassword
         run: mvn -U flyway:migrate
 
       - name: Run Tests
