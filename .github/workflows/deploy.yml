@@ -57,7 +57,7 @@ jobs:
           SPRING_DATASOURCE_USERNAME: testuser
           SPRING_DATASOURCE_PASSWORD: testpassword
           SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-        run: mvn flyway:migrate
+        run: mvn -U flyway:migrate
 
       - name: Run Tests
         env:
