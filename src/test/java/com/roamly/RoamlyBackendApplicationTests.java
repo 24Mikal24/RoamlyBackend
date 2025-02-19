@@ -1,4 +1,4 @@
-package com.roamly.roamly_backend;
+package com.roamly;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
