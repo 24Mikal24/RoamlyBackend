@@ -12,13 +12,16 @@ import java.util.Map;
 @RequestMapping("/api")
 public class SecuredController {
 
+    @GetMapping("/public")
+    public Map<String, String> publicEndpoint() {
+        return Map.of("message", "This is a public endpoint. No authentication required.");
+    }
+
     @GetMapping("/private")
-    public Map<String, Object> getProtectedInfo(@AuthenticationPrincipal Jwt jwt) {
+    public Map<String, Object> privateEndpoint(@AuthenticationPrincipal Jwt jwt) {
         return Map.of(
-                "message", "You have accessed a protected endpoint!",
-                "user", jwt.getClaim("preferred_username"),
-                "email", jwt.getClaim("email"),
-                "roles", jwt.getClaim("realm_access")
+                "message", "This is a private endpoint. Authentication required.",
+                "user", jwt.getClaims()
         );
     }
 }
