@@ -2,7 +2,9 @@ package com.roamly.admin;
 
 import com.roamly.admin.users.api.CreateUserRequest;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -11,23 +13,27 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static lombok.AccessLevel.PACKAGE;
+
 @Service
+@RequiredArgsConstructor(access = PACKAGE)
 public class KeycloakAdminClient {
-    private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${keycloak.admin.server-url}")
-    private String keycloakServerUrl;
+    private final String keycloakServerUrl;
 
     @Value("${keycloak.admin.realm}")
-    private String realm;
+    private final String realm;
 
     @Value("${keycloak.admin.client-id}")
-    private String clientId;
+    private final String clientId;
 
     @Value("${keycloak.admin.client-secret}")
-    private String clientSecret;
+    private final String clientSecret;
 
-    private String getAdminAccessToken() {
+    private final RestTemplate restTemplate;
+
+    String getAdminAccessToken() {
         String tokenUrl = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -37,7 +43,7 @@ public class KeycloakAdminClient {
                 "&client_secret=" + clientSecret;
 
         HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
-        ResponseEntity<Map> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, request, Map.class);
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, request, new ParameterizedTypeReference<>() {});
 
         return (String) Objects.requireNonNull(response.getBody()).get("access_token");
     }
