@@ -1,8 +1,7 @@
-package com.roamly.admin.users;
+package com.roamly.users.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.roamly.admin.KeycloakAdminClient;
-import com.roamly.admin.users.api.CreateUserRequest;
+import com.roamly.auth.KeycloakAdminClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +34,7 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).build(); // ✅ Standalone setup
+        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
     }
 
     @Test

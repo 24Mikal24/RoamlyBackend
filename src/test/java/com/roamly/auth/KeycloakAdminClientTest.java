@@ -1,12 +1,12 @@
-package com.roamly.admin;
+package com.roamly.auth;
 
-import com.roamly.admin.users.api.CreateUserRequest;
+import com.roamly.users.Users;
+import com.roamly.users.api.CreateUserRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -25,18 +25,15 @@ class KeycloakAdminClientTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private Users userRepository;
+
     @InjectMocks
     private KeycloakAdminClient keycloakAdminClient;
 
     @BeforeEach
     void setUp() {
-        keycloakAdminClient = new KeycloakAdminClient(
-                "https://keycloak.example.com",
-                "roamly",
-                "admin-client",
-                "admin-secret",
-                restTemplate
-        );
+        keycloakAdminClient = new KeycloakAdminClient(restTemplate, userRepository);
     }
 
     @Test
