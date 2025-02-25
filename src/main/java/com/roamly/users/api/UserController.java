@@ -1,21 +1,20 @@
-package com.roamly.admin.users;
+package com.roamly.users.api;
 
-import com.roamly.admin.KeycloakAdminClient;
-import com.roamly.admin.users.api.CreateUserRequest;
+import com.roamly.auth.KeycloakAdminClient;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static lombok.AccessLevel.PACKAGE;
+
 @RestController
+@RequiredArgsConstructor(access = PACKAGE)
 @RequestMapping("/api/admin")
-public class UserController {
+class UserController {
 
     private final KeycloakAdminClient keycloakAdminClient;
-
-    public UserController(KeycloakAdminClient keycloakAdminClient) {
-        this.keycloakAdminClient = keycloakAdminClient;
-    }
 
     @PostMapping("/create-user")
     public ResponseEntity<String> createUser(@Valid @RequestBody CreateUserRequest request) {

@@ -2,6 +2,7 @@ package com.roamly.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -52,6 +54,7 @@ public class SecurityConfig {
         converter.setAuthoritiesClaimName("realm_access.roles");
         converter.setAuthorityPrefix("ROLE_");
         JwtAuthenticationConverter authConverter = new JwtAuthenticationConverter();
+        authConverter.setPrincipalClaimName("sub");
         authConverter.setJwtGrantedAuthoritiesConverter(converter);
         return authConverter;
     }
