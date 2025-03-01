@@ -15,6 +15,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static java.time.Instant.now;
 
@@ -41,7 +43,7 @@ public class Itinerary {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @OneToMany(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "itinerary", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     private List<ItineraryStop> stops = new ArrayList<>();
 
     @CreatedBy
@@ -64,7 +66,6 @@ public class Itinerary {
                 .title(title)
                 .destination(destination)
                 .description(description)
-                .stops(stops)
                 .build();
     }
 

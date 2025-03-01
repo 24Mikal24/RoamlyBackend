@@ -16,16 +16,22 @@ import java.util.UUID;
 public class User {
 
     @Id
+    @Column(name = "id")
     private UUID id;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "username", unique = true, nullable = false)
     private String username;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "first_name")
     private String firstName;
+
+    @Column(name = "last_name")
     private String lastName;
+
+    @Column(name = "role")
     private String role;
 
     @Column(name = "created_at", nullable = false, updatable = false)

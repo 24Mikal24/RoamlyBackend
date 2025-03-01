@@ -12,6 +12,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
+import static jakarta.persistence.EnumType.STRING;
+import static jakarta.persistence.FetchType.LAZY;
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 @Entity
 @Table(name = "itinerary_stops")
 @Getter
@@ -23,14 +27,14 @@ import java.time.LocalDateTime;
 public class ItineraryStop {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "itinerary_id", nullable = false)
     private Itinerary itinerary;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String location;
 
     @Column(nullable = false)
@@ -40,7 +44,7 @@ public class ItineraryStop {
     private String description;
 
     @Column(length = 50)
-    @Enumerated(EnumType.STRING)
+    @Enumerated(STRING)
     private ActivityType activityType;
 
     @Column
