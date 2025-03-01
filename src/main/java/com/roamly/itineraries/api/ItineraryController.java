@@ -15,6 +15,7 @@ import java.util.List;
 
 import static lombok.AccessLevel.PACKAGE;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.ResponseEntity.*;
 
 @RestController
 @RequiredArgsConstructor(access = PACKAGE)
@@ -29,23 +30,23 @@ class ItineraryController {
     @PostMapping
     public ResponseEntity<ItineraryDetails> createItineraryByUserId(@Valid @RequestBody CreateItineraryRequest request,
                                                                     @AuthenticationPrincipal Jwt jwt) {
-        return new ResponseEntity<>(createItinerary.createItinerary(request, jwt.getClaim("sub")), CREATED);
+        return status(CREATED).body(createItinerary.createItinerary(request, jwt.getClaim("sub")));
     }
 
     @GetMapping
     public ResponseEntity<List<ItineraryDetails>> findItineraries() {
-        return ResponseEntity.ok(findItineraries.findItineraries());
+        return ok(findItineraries.findItineraries());
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ItineraryDetails> updateItineraryById(@PathVariable("id") @Positive Long id,
                                                                 @RequestBody UpdateItineraryRequest request) {
-        return ResponseEntity.ok(updateItinerary.updateItinerary(request));
+        return ok(updateItinerary.updateItinerary(request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteItineraryById(@PathVariable("id") @Positive Long id) {
         deleteItinerary.deleteItineraryById(id);
-        return ResponseEntity.noContent().build();
+        return noContent().build();
     }
 }
