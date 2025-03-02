@@ -1,10 +1,10 @@
 package com.roamly.auth;
 
-import com.roamly.common.exceptions.KeycloakClientUnreachableException;
-import com.roamly.users.Users;
-import com.roamly.users.api.CreateUserRequest;
+import com.roamly.auth.api.Keycloak;
+import com.roamly.auth.api.request.KeycloakCreateUserRequest;
+import com.roamly.common.exceptions.KeycloakClientException;
+import com.roamly.users.api.request.CreateUserRequest;
 
-import com.roamly.users.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -14,8 +14,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
-import static java.time.LocalDateTime.now;
-import static java.util.Objects.requireNonNull;
 import static lombok.AccessLevel.PACKAGE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -25,7 +23,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @Service
 @RequiredArgsConstructor(access = PACKAGE)
-public class KeycloakAdminClient {
+class KeycloakAdminClient implements Keycloak {
 
     @Value("${keycloak.admin.server-url}")
     private String keycloakServerUrl;
@@ -39,37 +37,36 @@ public class KeycloakAdminClient {
     @Value("${keycloak.admin.client-secret}")
     private String clientSecret;
 
-    private final Users userRepository;
-
     private final RestTemplate restTemplate;
 
-    public ResponseEntity<String> createUser(CreateUserRequest createUserRequest) {
-        String token = getAdminAccessToken();
+    @Override
+    public String createUser(CreateUserRequest createUserRequest) {
+        var userCreationEndpoint = keycloakServerUrl + "/admin/realms/" + realm + "/users";
 
-        var keycloakResponse = createUserInKeycloak(createUserRequest, token);
+        var token = getAdminAccessToken();
+        var request = new HttpEntity<>(KeycloakCreateUserRequest.from(createUserRequest), headers(token));
+        var response = restTemplate.exchange(userCreationEndpoint, POST, request, String.class);
 
-        if (keycloakResponse.getStatusCode() == CREATED) {
-            String userId = getKeycloakUserId(createUserRequest.username(), token);
-
-            User newUser = User.builder()
-                    .id(UUID.fromString(userId))
-                    .username(createUserRequest.username())
-                    .email(createUserRequest.email())
-                    .firstName(createUserRequest.firstName())
-                    .lastName(createUserRequest.lastName())
-                    .role("USER")
-                    .createdAt(now())
-                    .build();
-
-            userRepository.save(newUser);
+        if (response.getStatusCode().equals(CREATED)) {
+            return getKeycloakUserId(createUserRequest.username(), token);
         }
 
-        return keycloakResponse;
+        throw new KeycloakClientException("KeycloakAdminClient: There was a problem creating the user");
     }
 
-    String getAdminAccessToken() {
-        String tokenRetrievalEndpoint = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
-        String tokenRetrievalRequest = "grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecret;
+    private String getKeycloakUserId(String username, String token) {
+        var keycloakBaseUserRetrievalEndpoint = keycloakServerUrl + "/admin/realms/" + realm + "/users?username=";
+
+        ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(keycloakBaseUserRetrievalEndpoint + username, GET, new HttpEntity<>(headers(token)), new ParameterizedTypeReference<>() {});
+
+        return (String) Optional.ofNullable(response.getBody())
+                .orElseThrow(() -> new KeycloakClientException("KeycloakAdminClient: There was a problem finding user id"))
+                .getFirst().get("id");
+    }
+
+    private String getAdminAccessToken() {
+        var tokenRetrievalEndpoint = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+        var tokenRetrievalRequest = "grant_type=client_credentials&client_id=" + clientId + "&client_secret=" + clientSecret;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(APPLICATION_FORM_URLENCODED);
@@ -78,50 +75,15 @@ public class KeycloakAdminClient {
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(tokenRetrievalEndpoint, POST, request, new ParameterizedTypeReference<>() {});
 
         return (String) Optional.ofNullable(response.getBody())
-                .orElseThrow(() -> new KeycloakClientUnreachableException("Could not reach Keycloak client."))
+                .orElseThrow(() -> new KeycloakClientException("KeycloakAdminClient: There was a problem retrieving admin access token"))
                 .get("access_token");
     }
 
-    private ResponseEntity<String> createUserInKeycloak(CreateUserRequest createUserRequest, String token) {
-        String userCreationEndpoint = keycloakServerUrl + "/admin/realms/" + realm + "/users";
-
-        var userCreationRequest = keycloakUserCreationRequestFrom(createUserRequest, token);
-
-        return restTemplate.exchange(userCreationEndpoint, POST, userCreationRequest, String.class);
-    }
-
-
-    private String getKeycloakUserId(String username, String token) {
-        String keycloakBaseUserRetrievalEndpoint = keycloakServerUrl + "/admin/realms/" + realm + "/users?username=";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(keycloakBaseUserRetrievalEndpoint + username, GET, entity, new ParameterizedTypeReference<>() {});
-
-        return (String) requireNonNull(response.getBody()).getFirst().get("id");
-    }
-
-    private HttpEntity<Map<String, Object>> keycloakUserCreationRequestFrom(CreateUserRequest createUserRequest, String token) {
+    private HttpHeaders headers(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         headers.setContentType(APPLICATION_JSON);
 
-        Map<String, Object> userPayload = new HashMap<>();
-        userPayload.put("username", createUserRequest.username());
-        userPayload.put("email", createUserRequest.email());
-        userPayload.put("firstName", createUserRequest.firstName());
-        userPayload.put("lastName", createUserRequest.lastName());
-        userPayload.put("enabled", true);
-
-        Map<String, Object> credentials = new HashMap<>();
-        credentials.put("type", "password");
-        credentials.put("value", createUserRequest.password());
-        credentials.put("temporary", false);
-
-        userPayload.put("credentials", new Map[]{credentials});
-
-        return new HttpEntity<>(userPayload, headers);
+        return headers;
     }
 }

@@ -1,8 +1,7 @@
 package com.roamly.auth;
 
-import com.roamly.common.exceptions.KeycloakClientUnreachableException;
-import com.roamly.users.Users;
-import com.roamly.users.api.CreateUserRequest;
+import com.roamly.common.exceptions.KeycloakClientException;
+import com.roamly.users.api.request.CreateUserRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,8 +16,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -45,48 +44,52 @@ class KeycloakAdminClientTest {
     @Mock
     private RestTemplate restTemplate;
 
-    @Mock
-    private Users userRepository;
-
     @InjectMocks
     private KeycloakAdminClient keycloakAdminClient;
 
-    private final String tokenRetrievalEndpoint = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";;
+    private String userId;
+
+    private final String tokenRetrievalEndpoint = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+    private final String userCreationEndpoint = keycloakServerUrl + "/admin/realms/" + realm + "/users";
+    private final String baseUserRetrievalEndpoint = keycloakServerUrl + "/admin/realms/" + realm + "/users?username=";
     private final CreateUserRequest createUserRequest = new CreateUserRequest("John", "Doe", "johndoe", "john@example.com", "password123");
 
     @BeforeEach
     void setUp() {
-        keycloakAdminClient = new KeycloakAdminClient(userRepository, restTemplate);
-    }
-
-    @Test
-    void shouldReturnAdminAccessTokenWhenValidResponse() {
-        givenKeycloakTokenRetrievalIsSuccessful();
-        var token = keycloakAdminClient.getAdminAccessToken();
-        assertEquals("mock-token", token);
-        verify(restTemplate, times(1)).exchange(anyString(), eq(POST), any(HttpEntity.class), any(ParameterizedTypeReference.class));
+        keycloakAdminClient = new KeycloakAdminClient(restTemplate);
+        userId = UUID.randomUUID().toString();
     }
 
     @Test
     void shouldCreateUserSuccessfully() {
         givenKeycloakTokenRetrievalIsSuccessful();
+        givenKeycloakUserCreationIsSuccessful();
+        givenNewlyCreatedUsersIdCouldBeRetrieved();
 
-        String userCreationEndpoint = keycloakServerUrl + "/admin/realms/" + realm + "/users";
-        String baseUserRetrievalEndpoint = keycloakServerUrl + "/admin/realms/" + realm + "/users?username=";
+        assertEquals(keycloakAdminClient.createUser(createUserRequest), userId);
+    }
 
-
-        when(restTemplate.exchange(eq(userCreationEndpoint), eq(POST), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(status(CREATED).body("User created"));
-
-        var getUserResponse = ok(List.of(Map.of("id", randomUUID().toString())));
+    @Test
+    void shouldThrowExceptionWhenUserIdRetrievalFails() {
+        givenKeycloakTokenRetrievalIsSuccessful();
+        givenKeycloakUserCreationIsSuccessful();
 
         when(restTemplate.exchange(eq(baseUserRetrievalEndpoint + createUserRequest.username()), eq(GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
-                .thenReturn(getUserResponse);
+                .thenReturn(status(BAD_REQUEST).build());
 
-        var response = keycloakAdminClient.createUser(createUserRequest);
+        var exception = assertThrows(KeycloakClientException.class, () -> keycloakAdminClient.createUser(createUserRequest));
+        assertEquals(exception.getMessage(), "KeycloakAdminClient: There was a problem finding user id");
+    }
 
-        assertEquals(CREATED, response.getStatusCode());
-        assertEquals("User created", response.getBody());
+    @Test
+    void shouldThrowExceptionWhenUserCreationFails() {
+        givenKeycloakTokenRetrievalIsSuccessful();
+
+        when(restTemplate.exchange(eq(userCreationEndpoint), eq(POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(status(BAD_REQUEST).build());
+
+        var exception = assertThrows(KeycloakClientException.class, () -> keycloakAdminClient.createUser(createUserRequest));
+        assertEquals(exception.getMessage(), "KeycloakAdminClient: There was a problem creating the user");
     }
 
     @Test
@@ -94,7 +97,8 @@ class KeycloakAdminClientTest {
         when(restTemplate.exchange(eq(tokenRetrievalEndpoint), eq(POST), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
                 .thenReturn(noContent().build());
 
-        assertThrows(KeycloakClientUnreachableException.class, () -> keycloakAdminClient.getAdminAccessToken());
+        var exception = assertThrows(KeycloakClientException.class, () -> keycloakAdminClient.createUser(createUserRequest));
+        assertEquals(exception.getMessage(), "KeycloakAdminClient: There was a problem retrieving admin access token");
     }
 
     private void givenKeycloakTokenRetrievalIsSuccessful() {
@@ -105,5 +109,17 @@ class KeycloakAdminClientTest {
 
         when(restTemplate.exchange(eq(tokenRetrievalEndpoint), eq(POST), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
                 .thenReturn(responseEntity);
+    }
+
+    private void givenKeycloakUserCreationIsSuccessful() {
+        when(restTemplate.exchange(eq(userCreationEndpoint), eq(POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(status(CREATED).build());
+    }
+
+    private void givenNewlyCreatedUsersIdCouldBeRetrieved() {
+        var userIdResponse = ok(List.of(Map.of("id", userId)));
+
+        when(restTemplate.exchange(eq(baseUserRetrievalEndpoint + createUserRequest.username()), eq(GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
+                .thenReturn(userIdResponse);
     }
 }

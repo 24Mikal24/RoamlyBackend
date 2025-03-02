@@ -1,4 +1,4 @@
-package com.roamly.users.api;
+package com.roamly.users.api.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

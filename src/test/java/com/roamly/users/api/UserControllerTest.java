@@ -1,20 +1,22 @@
 package com.roamly.users.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.roamly.auth.KeycloakAdminClient;
+import com.roamly.users.api.request.CreateUserRequest;
+import com.roamly.users.api.response.UserDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,7 +28,7 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private KeycloakAdminClient keycloakAdminClient;
+    private CreateUser createUser;
 
     @InjectMocks
     private UserController userController;
@@ -41,16 +43,25 @@ class UserControllerTest {
     void shouldCreateUserSuccessfully() throws Exception {
         CreateUserRequest request = new CreateUserRequest("JohnnyBravo23", "john@example.com", "password123", "john", "doe");
 
-        when(keycloakAdminClient.createUser(any(CreateUserRequest.class)))
-                .thenReturn(ResponseEntity.ok("User created successfully"));
+        when(createUser.handle(any(CreateUserRequest.class)))
+                .thenReturn(UserDetails.builder()
+                        .username(request.username())
+                        .email(request.email())
+                        .firstName(request.firstName())
+                        .lastName(request.lastName())
+                        .build());
 
         mockMvc.perform(post("/api/admin/create-user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(content().string("User created successfully"));
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username").value(request.username()))
+                .andExpect(jsonPath("$.email").value(request.email()))
+                .andExpect(jsonPath("$.firstName").value(request.firstName()))
+                .andExpect(jsonPath("$.lastName").value(request.lastName()));
 
-        Mockito.verify(keycloakAdminClient).createUser(any(CreateUserRequest.class));
+        verify(createUser).handle(any(CreateUserRequest.class));
     }
 
     @Test

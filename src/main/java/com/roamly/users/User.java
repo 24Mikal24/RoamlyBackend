@@ -1,5 +1,6 @@
 package com.roamly.users;
 
+import com.roamly.users.api.response.UserDetails;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,4 +37,13 @@ public class User {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public UserDetails toDetails() {
+        return UserDetails.builder()
+                .username(username)
+                .email(email)
+                .firstName(firstName)
+                .lastName(lastName)
+                .build();
+    }
 }
