@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-interface ItineraryRepository extends JpaRepository<Itinerary, Long> {
+interface Itineraries extends JpaRepository<Itinerary, Long> {
+
     List<Itinerary> findByCreatedBy(String createdBy);
 }

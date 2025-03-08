@@ -1,20 +1,19 @@
 package com.roamly.itineraries.stops;
 
 import com.roamly.itineraries.Itinerary;
+import com.roamly.itineraries.stops.api.request.CreateItineraryStopRequest;
+import com.roamly.itineraries.stops.api.response.ItineraryStopDetails;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
-import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static java.time.Instant.now;
 
 @Entity
 @Table(name = "itinerary_stops")
@@ -37,30 +36,32 @@ public class ItineraryStop {
     @Column(nullable = false)
     private String location;
 
-    @Column(nullable = false)
-    private LocalDateTime time;
-
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Column(length = 50)
-    @Enumerated(STRING)
-    private ActivityType activityType;
-
-    @Column
-    private Integer durationMinutes;
-
-    @CreatedBy
-    @Column(nullable = false, updatable = false)
-    private String createdBy;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdDate;
 
-    @LastModifiedBy
-    private String modifiedBy;
-
     @LastModifiedDate
     private Instant modifiedDate;
+
+    ItineraryStopDetails toDetails() {
+        return ItineraryStopDetails.builder()
+                .id(id)
+                .itineraryId(itinerary.getId())
+                .location(location)
+                .description(description)
+                .build();
+    }
+
+    static ItineraryStop createdFrom(CreateItineraryStopRequest request) {
+        return builder()
+                .createdDate(now())
+                .modifiedDate(now())
+                .itinerary(Itinerary.builder().id(request.itineraryId()).build())
+                .location(request.location())
+                .description(request.description())
+                .build();
+    }
 }

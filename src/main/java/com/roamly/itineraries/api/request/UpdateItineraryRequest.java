@@ -7,8 +7,8 @@ import jakarta.validation.constraints.Size;
 
 
 public record UpdateItineraryRequest (
-       @Positive(message = "Itinerary id must be positive")
-       @NotNull(message = "Itinerary id is required")
+       @Positive(message = "Itinerary itineraryId must be positive")
+       @NotNull(message = "Itinerary itineraryId is required")
        Long id,
 
        @NotBlank(message = "Title is required")

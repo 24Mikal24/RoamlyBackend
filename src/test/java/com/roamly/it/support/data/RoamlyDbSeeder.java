@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static java.util.UUID.randomUUID;
 import static lombok.AccessLevel.PACKAGE;
 
 @Component
@@ -22,11 +21,12 @@ public class RoamlyDbSeeder {
     private final Faker faker = new Faker();
     private final NamedParameterJdbcTemplate jdbc;
 
-    public Map<String, String> insertItinerary() {
+    public Long insertItinerary() {
         var createdBy = insertUser();
         var title = faker.address().cityName() + " " + faker.options().option("Adventure", "Escape", "Getaway", "Vacation");
         var destination = faker.address().country();
         var description = faker.lorem().sentence();
+
         var params = new MapSqlParameterSource()
                 .addValue("title", title)
                 .addValue("destination", destination)
@@ -34,20 +34,39 @@ public class RoamlyDbSeeder {
                 .addValue("created_by", createdBy)
                 .addValue("modified_by", createdBy);
 
-        var id = new SimpleJdbcInsert(jdbc.getJdbcTemplate())
+        return new SimpleJdbcInsert(jdbc.getJdbcTemplate())
                 .withTableName("itineraries")
                 .usingGeneratedKeyColumns("id")
                 .usingColumns(params.getParameterNames())
                 .executeAndReturnKey(params)
                 .longValue();
+    }
 
-        return Map.of("id", String.valueOf(id), "title", title, "destination", destination, "description", description);
+    public Map<String, Long> insertItineraryStop() {
+        var itineraryId = insertItinerary();
+        var location = faker.location().building();
+        var description = faker.lorem().paragraph();
+
+        var params = new MapSqlParameterSource()
+                .addValue("itinerary_id", itineraryId)
+                .addValue("location", location)
+                .addValue("description", description);
+
+        var id = new SimpleJdbcInsert(jdbc.getJdbcTemplate())
+                .withTableName("itinerary_stops")
+                .usingGeneratedKeyColumns("id")
+                .usingColumns(params.getParameterNames())
+                .executeAndReturnKey(params)
+                .longValue();
+
+        return Map.of("id", id, "itineraryId", itineraryId);
     }
 
     public String insertUser() {
         var id = AuthenticatedUser.getCurrentUserId();
         var username = faker.internet().username();
         var email = faker.internet().emailAddress();
+
         var params = new MapSqlParameterSource()
                 .addValue("id", id)
                 .addValue("username", username)

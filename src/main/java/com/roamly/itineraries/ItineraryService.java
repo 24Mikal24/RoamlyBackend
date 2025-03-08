@@ -2,7 +2,6 @@ package com.roamly.itineraries;
 
 import com.roamly.auth.AuthenticatedUser;
 import com.roamly.common.exceptions.ModelNotFoundException;
-import com.roamly.itineraries.api.*;
 import com.roamly.itineraries.api.request.CreateItineraryRequest;
 import com.roamly.itineraries.api.request.UpdateItineraryRequest;
 import com.roamly.itineraries.api.response.ItineraryDetails;
@@ -18,45 +17,40 @@ import static lombok.AccessLevel.PACKAGE;
 
 @Service
 @RequiredArgsConstructor(access = PACKAGE)
-class ItineraryService implements CreateItinerary, FindItineraries, UpdateItinerary, DeleteItinerary {
+class ItineraryService {
 
-    private final ItineraryRepository itinerariesRepository;
+    private final Itineraries itineraries;
 
-    @Override
     @Transactional
-    public ItineraryDetails createItinerary(CreateItineraryRequest request, String userId) {
-        return itinerariesRepository.save(Itinerary.createdFrom(request, userId)).toDetails();
+    public ItineraryDetails handle(CreateItineraryRequest request, String userId) {
+        return itineraries.save(Itinerary.createdFrom(request, userId)).toDetails();
     }
 
-    @Override
-    @Transactional
     public List<ItineraryDetails> findItineraries() {
-        return itinerariesRepository.findByCreatedBy(AuthenticatedUser.getCurrentUserId())
+        return itineraries.findByCreatedBy(AuthenticatedUser.getCurrentUserId())
                 .stream()
                 .map(Itinerary::toDetails)
                 .collect(Collectors.toList());
     }
 
-    @Override
     @Transactional
-    @PreAuthorize("@itinerarySecurity.hasAccessToItinerary(#request.id)")
-    public ItineraryDetails updateItinerary(UpdateItineraryRequest request) {
-        Itinerary itinerary = itinerariesRepository.findById(request.id())
+    @PreAuthorize("@itineraryPermissions.userOwnsItinerary(#request.id)")
+    public ItineraryDetails handle(UpdateItineraryRequest request) {
+        Itinerary itinerary = itineraries.findById(request.id())
                 .orElseThrow(() -> new ModelNotFoundException("Itinerary", request.id()));
 
         itinerary.setTitle(request.title());
         itinerary.setDestination(request.destination());
         itinerary.setDescription(request.description());
 
-        return itinerariesRepository.save(itinerary).toDetails();
+        return itineraries.save(itinerary).toDetails();
     }
 
-    @Override
     @Transactional
-    @PreAuthorize("@itinerarySecurity.hasAccessToItinerary(#id)")
+    @PreAuthorize("@itineraryPermissions.userOwnsItinerary(#id)")
     public void deleteItineraryById(Long id) {
-        itinerariesRepository.findById(id).ifPresentOrElse(
-                itinerariesRepository::delete,
+        itineraries.findById(id).ifPresentOrElse(
+                itineraries::delete,
                 () -> { throw new ModelNotFoundException("Itinerary", id); }
         );
     }

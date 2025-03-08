@@ -1,4 +1,4 @@
-package com.roamly.itineraries.api;
+package com.roamly.itineraries;
 
 import com.roamly.itineraries.api.request.CreateItineraryRequest;
 import com.roamly.itineraries.api.request.UpdateItineraryRequest;
@@ -15,6 +15,7 @@ import java.util.List;
 
 import static lombok.AccessLevel.PACKAGE;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.ResponseEntity.*;
 
 @RestController
@@ -22,31 +23,27 @@ import static org.springframework.http.ResponseEntity.*;
 @RequestMapping("/api/itineraries")
 class ItineraryController {
 
-    private final CreateItinerary createItinerary;
-    private final FindItineraries findItineraries;
-    private final UpdateItinerary updateItinerary;
-    private final DeleteItinerary deleteItinerary;
+    private final ItineraryService itineraryService;
 
-    @PostMapping
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<ItineraryDetails> createItineraryByUserId(@Valid @RequestBody CreateItineraryRequest request,
                                                                     @AuthenticationPrincipal Jwt jwt) {
-        return status(CREATED).body(createItinerary.createItinerary(request, jwt.getClaim("sub")));
+        return status(CREATED).body(itineraryService.handle(request, jwt.getClaim("sub")));
     }
 
-    @GetMapping
+    @GetMapping(produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<ItineraryDetails>> findItineraries() {
-        return ok(findItineraries.findItineraries());
+        return ok(itineraryService.findItineraries());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ItineraryDetails> updateItineraryById(@PathVariable("id") @Positive Long id,
-                                                                @RequestBody UpdateItineraryRequest request) {
-        return ok(updateItinerary.updateItinerary(request));
+    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<ItineraryDetails> updateItineraryById(@Valid @RequestBody UpdateItineraryRequest request) {
+        return ok(itineraryService.handle(request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteItineraryById(@PathVariable("id") @Positive Long id) {
-        deleteItinerary.deleteItineraryById(id);
+        itineraryService.deleteItineraryById(id);
         return noContent().build();
     }
 }

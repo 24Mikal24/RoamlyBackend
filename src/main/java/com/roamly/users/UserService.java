@@ -1,7 +1,6 @@
 package com.roamly.users;
 
 import com.roamly.auth.api.Keycloak;
-import com.roamly.users.api.CreateUser;
 import com.roamly.users.api.request.CreateUserRequest;
 import com.roamly.users.api.response.UserDetails;
 import lombok.RequiredArgsConstructor;
@@ -15,12 +14,11 @@ import static lombok.AccessLevel.PACKAGE;
 
 @Service
 @RequiredArgsConstructor(access = PACKAGE)
-class UserService implements CreateUser {
+class UserService {
 
     private final Keycloak keycloakAdminClient;
     private final Users userRepository;
 
-    @Override
     public UserDetails handle(CreateUserRequest request) {
             var userId = keycloakAdminClient.createUser(request);
 

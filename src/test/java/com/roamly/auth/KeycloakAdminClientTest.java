@@ -35,7 +35,7 @@ class KeycloakAdminClientTest {
     @Value("${keycloak.admin.realm}")
     private String realm;
 
-    @Value("${keycloak.admin.client-id}")
+    @Value("${keycloak.admin.client-itineraryId}")
     private String clientId;
 
     @Value("${keycloak.admin.client-secret}")
@@ -78,7 +78,7 @@ class KeycloakAdminClientTest {
                 .thenReturn(status(BAD_REQUEST).build());
 
         var exception = assertThrows(KeycloakClientException.class, () -> keycloakAdminClient.createUser(createUserRequest));
-        assertEquals(exception.getMessage(), "KeycloakAdminClient: There was a problem finding user id");
+        assertEquals(exception.getMessage(), "KeycloakAdminClient: There was a problem finding user itineraryId");
     }
 
     @Test

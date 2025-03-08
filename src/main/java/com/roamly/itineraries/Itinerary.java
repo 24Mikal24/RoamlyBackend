@@ -60,7 +60,7 @@ public class Itinerary {
     @LastModifiedDate
     private Instant modifiedDate;
 
-    public ItineraryDetails toDetails() {
+    ItineraryDetails toDetails() {
         return ItineraryDetails.builder()
                 .id(id)
                 .title(title)
@@ -69,7 +69,7 @@ public class Itinerary {
                 .build();
     }
 
-    public static Itinerary createdFrom(CreateItineraryRequest request, String createdBy) {
+    static Itinerary createdFrom(CreateItineraryRequest request, String createdBy) {
         return builder()
                 .createdBy(createdBy)
                 .createdDate(now())

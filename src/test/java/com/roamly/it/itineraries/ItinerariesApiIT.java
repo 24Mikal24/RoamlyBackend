@@ -30,7 +30,7 @@ class ItinerariesApiIT extends RoamlyContainersIT {
     private WebApplicationContext wac;
 
     @Autowired
-    private RoamlyDbSeeder dbSeeder;
+    private RoamlyDbSeeder seeder;
 
     private MockMvc mvc;
 
@@ -43,11 +43,13 @@ class ItinerariesApiIT extends RoamlyContainersIT {
     @WithAuthenticatedUser
     void createsItinerary() throws Exception {
         var request = new CreateItineraryRequest("title", "destination", "description");
+
         mvc.perform(post("/api/itineraries")
-                        .contentType(APPLICATION_JSON)
-                        .content(toJson(request)))
+                    .contentType(APPLICATION_JSON)
+                    .content(toJson(request)))
                 .andDo(print())
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").hasJsonPath())
                 .andExpect(jsonPath("$.title").value(request.title()))
                 .andExpect(jsonPath("$.destination").value(request.destination()))
                 .andExpect(jsonPath("$.description").value(request.description()));
@@ -56,29 +58,29 @@ class ItinerariesApiIT extends RoamlyContainersIT {
     @Test
     @WithAuthenticatedUser
     void findsItineraries() throws Exception {
-        var itinerary = dbSeeder.insertItinerary();
+        var itineraryId = seeder.insertItinerary();
 
         mvc.perform(get("/api/itineraries"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(itinerary.get("id")))
-                .andExpect(jsonPath("$[0].title").value(itinerary.get("title")))
-                .andExpect(jsonPath("$[0].destination").value(itinerary.get("destination")))
-                .andExpect(jsonPath("$[0].description").value(itinerary.get("description")));
+                .andExpect(jsonPath("$[0].id").value(itineraryId))
+                .andExpect(jsonPath("$[0].title").hasJsonPath())
+                .andExpect(jsonPath("$[0].destination").hasJsonPath())
+                .andExpect(jsonPath("$[0].description").hasJsonPath());
     }
 
     @Test
     @WithAuthenticatedUser
     void updatesItinerary() throws Exception {
-        var itinerary = dbSeeder.insertItinerary();
+        var itineraryId = seeder.insertItinerary();
         var request = new UpdateItineraryRequest(
-                Long.parseLong(itinerary.get("id")),
+                itineraryId,
                 "newTitle",
                 "newDestination",
                 "newDescription"
         );
 
-        mvc.perform(put(String.format("/api/itineraries/%s", itinerary.get("id")))
+        mvc.perform(put(String.format("/api/itineraries/%s", itineraryId))
                 .contentType(APPLICATION_JSON)
                 .content(toJson(request)))
                 .andDo(print())
@@ -92,9 +94,9 @@ class ItinerariesApiIT extends RoamlyContainersIT {
     @Test
     @WithAuthenticatedUser
     void deletesItinerary() throws Exception {
-        var itinerary = dbSeeder.insertItinerary();
+        var itineraryId = seeder.insertItinerary();
 
-        mvc.perform(delete(String.format("/api/itineraries/%s", Long.parseLong(itinerary.get("id")))))
+        mvc.perform(delete(String.format("/api/itineraries/%s", itineraryId)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }

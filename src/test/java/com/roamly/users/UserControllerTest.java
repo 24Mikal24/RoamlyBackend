@@ -1,4 +1,4 @@
-package com.roamly.users.api;
+package com.roamly.users;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roamly.users.api.request.CreateUserRequest;
@@ -28,7 +28,7 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private CreateUser createUser;
+    private UserService userService;
 
     @InjectMocks
     private UserController userController;
@@ -43,7 +43,7 @@ class UserControllerTest {
     void shouldCreateUserSuccessfully() throws Exception {
         CreateUserRequest request = new CreateUserRequest("JohnnyBravo23", "john@example.com", "password123", "john", "doe");
 
-        when(createUser.handle(any(CreateUserRequest.class)))
+        when(userService.handle(any(CreateUserRequest.class)))
                 .thenReturn(UserDetails.builder()
                         .username(request.username())
                         .email(request.email())
@@ -51,7 +51,7 @@ class UserControllerTest {
                         .lastName(request.lastName())
                         .build());
 
-        mockMvc.perform(post("/api/admin/create-user")
+        mockMvc.perform(post("/api/create-user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -61,14 +61,14 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.firstName").value(request.firstName()))
                 .andExpect(jsonPath("$.lastName").value(request.lastName()));
 
-        verify(createUser).handle(any(CreateUserRequest.class));
+        verify(userService).handle(any(CreateUserRequest.class));
     }
 
     @Test
     void shouldReturnBadRequestForInvalidRequest() throws Exception {
         CreateUserRequest invalidRequest = new CreateUserRequest("", "", "", "", "");
 
-        mockMvc.perform(post("/api/admin/create-user")
+        mockMvc.perform(post("/api/create-user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());

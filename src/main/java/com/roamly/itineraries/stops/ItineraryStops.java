@@ -7,5 +7,6 @@ import java.util.List;
 
 @Repository
 interface ItineraryStops extends JpaRepository<ItineraryStop, Long> {
-    List<ItineraryStop> findByItineraryId(Long itineraryId);
+
+    List<ItineraryStop> findByItineraryId(Long id);
 }

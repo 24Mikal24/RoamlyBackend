@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ItinerarySecurity {
+public class ItineraryPermissions {
 
-    private final ItineraryRepository itineraryRepository;
+    private final Itineraries itineraries;
 
-    public boolean hasAccessToItinerary(Long itineraryId) {
+    public boolean userOwnsItinerary(Long itineraryId) {
         String userId = getCurrentUserId();
 
-        return itineraryRepository.findById(itineraryId)
+        return itineraries.findById(itineraryId)
                 .map(itinerary -> itinerary.getCreatedBy().equals(userId))
                 .orElse(false);
     }
