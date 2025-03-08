@@ -1,9 +1,9 @@
 package com.roamly.auth;
 
 import com.roamly.auth.api.Keycloak;
-import com.roamly.auth.api.request.KeycloakCreateUserRequest;
+import com.roamly.auth.api.KeycloakCreateUserRequest;
 import com.roamly.common.exceptions.KeycloakClientException;
-import com.roamly.users.api.request.CreateUserRequest;
+import com.roamly.users.api.CreateUserRequest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

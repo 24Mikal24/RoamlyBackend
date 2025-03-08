@@ -1,7 +1,7 @@
 package com.roamly.itineraries;
 
-import com.roamly.itineraries.api.request.CreateItineraryRequest;
-import com.roamly.itineraries.api.response.ItineraryDetails;
+import com.roamly.itineraries.api.CreateItineraryRequest;
+import com.roamly.itineraries.api.ItineraryDetails;
 import com.roamly.itineraries.stops.ItineraryStop;
 import jakarta.persistence.*;
 import lombok.*;

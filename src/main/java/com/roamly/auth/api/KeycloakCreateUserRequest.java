@@ -1,6 +1,6 @@
-package com.roamly.auth.api.request;
+package com.roamly.auth.api;
 
-import com.roamly.users.api.request.CreateUserRequest;
+import com.roamly.users.api.CreateUserRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,7 @@
 package com.roamly.auth;
 
 import com.roamly.common.exceptions.KeycloakClientException;
-import com.roamly.users.api.request.CreateUserRequest;
+import com.roamly.users.api.CreateUserRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

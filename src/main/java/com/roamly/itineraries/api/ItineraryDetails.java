@@ -1,4 +1,4 @@
-package com.roamly.itineraries.api.response;
+package com.roamly.itineraries.api;
 
 import lombok.Builder;
 import lombok.Data;

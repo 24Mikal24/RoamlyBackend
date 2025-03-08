@@ -1,8 +1,8 @@
 package com.roamly.itineraries.stops;
 
 import com.roamly.itineraries.Itinerary;
-import com.roamly.itineraries.stops.api.request.CreateItineraryStopRequest;
-import com.roamly.itineraries.stops.api.response.ItineraryStopDetails;
+import com.roamly.itineraries.stops.api.CreateItineraryStopRequest;
+import com.roamly.itineraries.stops.api.ItineraryStopDetails;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;

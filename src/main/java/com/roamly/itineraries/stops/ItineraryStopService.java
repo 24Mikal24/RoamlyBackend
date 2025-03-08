@@ -1,9 +1,9 @@
 package com.roamly.itineraries.stops;
 
 import com.roamly.common.exceptions.ModelNotFoundException;
-import com.roamly.itineraries.stops.api.request.CreateItineraryStopRequest;
-import com.roamly.itineraries.stops.api.request.UpdateItineraryStopRequest;
-import com.roamly.itineraries.stops.api.response.ItineraryStopDetails;
+import com.roamly.itineraries.stops.api.CreateItineraryStopRequest;
+import com.roamly.itineraries.stops.api.UpdateItineraryStopRequest;
+import com.roamly.itineraries.stops.api.ItineraryStopDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;

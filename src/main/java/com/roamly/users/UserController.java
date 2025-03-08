@@ -1,7 +1,7 @@
 package com.roamly.users;
 
-import com.roamly.users.api.request.CreateUserRequest;
-import com.roamly.users.api.response.UserDetails;
+import com.roamly.users.api.CreateUserRequest;
+import com.roamly.users.api.UserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

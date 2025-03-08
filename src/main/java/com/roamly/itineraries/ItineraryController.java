@@ -1,8 +1,8 @@
 package com.roamly.itineraries;
 
-import com.roamly.itineraries.api.request.CreateItineraryRequest;
-import com.roamly.itineraries.api.request.UpdateItineraryRequest;
-import com.roamly.itineraries.api.response.ItineraryDetails;
+import com.roamly.itineraries.api.CreateItineraryRequest;
+import com.roamly.itineraries.api.UpdateItineraryRequest;
+import com.roamly.itineraries.api.ItineraryDetails;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;

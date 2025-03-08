@@ -1,8 +1,8 @@
 package com.roamly.users;
 
 import com.roamly.auth.api.Keycloak;
-import com.roamly.users.api.request.CreateUserRequest;
-import com.roamly.users.api.response.UserDetails;
+import com.roamly.users.api.CreateUserRequest;
+import com.roamly.users.api.UserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

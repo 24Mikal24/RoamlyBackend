@@ -1,6 +1,6 @@
 package com.roamly.auth.api;
 
-import com.roamly.users.api.request.CreateUserRequest;
+import com.roamly.users.api.CreateUserRequest;
 
 public interface Keycloak {
 

@@ -2,9 +2,9 @@ package com.roamly.itineraries;
 
 import com.roamly.auth.AuthenticatedUser;
 import com.roamly.common.exceptions.ModelNotFoundException;
-import com.roamly.itineraries.api.request.CreateItineraryRequest;
-import com.roamly.itineraries.api.request.UpdateItineraryRequest;
-import com.roamly.itineraries.api.response.ItineraryDetails;
+import com.roamly.itineraries.api.CreateItineraryRequest;
+import com.roamly.itineraries.api.UpdateItineraryRequest;
+import com.roamly.itineraries.api.ItineraryDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
